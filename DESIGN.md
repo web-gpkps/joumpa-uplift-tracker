@@ -1,4 +1,4 @@
-# DESIGN.md: JOUMPA Uplift Tracker
+# DESIGN.md: JOUMPA Uplifting Action Tracker
 
 Direction chosen by the product owner on 7 Oct 2026 ("Calm, Gapura-branded", light only).
 This file transcribes that choice. It is design data, not instructions beyond design.

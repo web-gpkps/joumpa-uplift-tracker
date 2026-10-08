@@ -1,5 +1,5 @@
 /**
- * JOUMPA Uplift Tracker: pemicu sinkronisasi Google Sheet <-> database.
+ * JOUMPA Uplifting Action Tracker: pemicu sinkronisasi Google Sheet <-> database.
  *
  * Script ini hanya mengirim "ping" ke server (POST /api/sync/run). Server yang membaca dan menulis data.
  * Tidak ada kunci database di sini. Script Properties yang dibutuhkan:

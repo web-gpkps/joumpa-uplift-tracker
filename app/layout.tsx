@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { APP_NAME, APP_TAGLINE } from "@/lib/app-info";
 import "./globals.css";
 
 // Plus Jakarta Sans (DESIGN.md Typography): made for Jakarta's city identity,
@@ -13,11 +14,11 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "JOUMPA Uplift Tracker",
-    template: "%s | JOUMPA Uplift Tracker",
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
   },
-  description:
-    "Pemantauan 10 minggu pasca pelatihan Uplifting Service JOUMPA, Customer Service Division PT Gapura Angkasa.",
+  applicationName: APP_NAME,
+  description: `${APP_TAGLINE}. Pemantauan 10 minggu pasca pelatihan Uplifting Service JOUMPA, Customer Service Division PT Gapura Angkasa.`,
   // Internal tool: nothing here should appear in search results.
   robots: { index: false, follow: false },
 };

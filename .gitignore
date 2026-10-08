@@ -51,3 +51,4 @@ supabase/.branches
 *.xlsx
 supabase/seed.sql
 scripts/out/
+!.env.example

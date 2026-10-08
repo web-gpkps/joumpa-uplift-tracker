@@ -1,4 +1,4 @@
-# UX.md: JOUMPA Uplift Tracker, usability redesign (8 Oct 2026)
+# UX.md: JOUMPA Uplifting Action Tracker, usability redesign (8 Oct 2026)
 
 Owner request: "make the dashboard and all UI/UX on every role and screen more user friendly;
 best, most comfortable UX; a clearer dashboard; make BMI and other data entry easier, e.g. with

@@ -1,4 +1,6 @@
-# JOUMPA Uplift Tracker: build spec
+# JOUMPA Uplifting Action Tracker: build spec
+
+Monitoring Hasil Evaluasi & Tindak Lanjut Perbaikan Layanan.
 
 Source of truth for every agent working on this repo. The source workbook is
 `Tracker Tindak Lanjut Uplifting JOUMPA.xlsx` in the repo root (gitignored: it holds

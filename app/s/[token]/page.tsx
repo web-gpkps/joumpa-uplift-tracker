@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { APP_NAME } from "@/lib/app-info";
 import { LinkScreenRoute } from "@/components/shell/ScreenRoute";
 import { RingkasanLoading, RingkasanScreen } from "@/components/ringkasan/RingkasanScreen";
 
 // The layout's title template only reaches child segments, not this index page.
-export const metadata: Metadata = { title: { absolute: "Dashboard | Ruang kerja JOUMPA" } };
+export const metadata: Metadata = { title: { absolute: `Dashboard | ${APP_NAME}` } };
 
 // Sits in the same segment as the token gate, which must reach the database on every request.
 export const instant = false;

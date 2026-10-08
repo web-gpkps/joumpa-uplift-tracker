@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/app-info";
 import { ReloadButton } from "@/components/ui/ReloadButton";
 import { AuthFrame } from "./AuthFrame";
 import { SignOutButton } from "./SignOutButton";
@@ -11,7 +12,7 @@ export function NotAdminScreen({ email }: { email: string }) {
         <>
           <p>
             Anda masuk sebagai <span className="font-semibold text-ink">{email || "akun tanpa email"}</span>.
-            Akun ini belum ada di daftar admin Uplift Tracker, jadi area pemilik tidak dibuka.
+            Akun ini belum ada di daftar admin {APP_NAME}, jadi area pemilik tidak dibuka.
           </p>
           <p className="mt-2">
             Stasiun dan KPS tidak perlu akun: mereka memakai tautan ruang kerja. Jika akun ini

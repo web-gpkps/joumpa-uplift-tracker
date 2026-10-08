@@ -6,6 +6,7 @@ import { formatScore } from "@/lib/format";
 import { weekStart } from "@/lib/rules";
 import { hrefs, lastChangedLabel, stationCodes, trackerData, type Workspace, type WorkspaceAccess } from "@/lib/workspace";
 import { saveWeeklyFindings } from "./actions";
+import { APP_NAME, APP_TAGLINE } from "@/lib/app-info";
 import { Logo } from "@/components/shell/Logo";
 import { WeekRail } from "@/components/shell/WeekRail";
 import { programmeStatus } from "@/components/shell/programme-calendar";
@@ -74,8 +75,12 @@ export function LaporanView({
 
   return (
     <div className="flex flex-col gap-6 print:gap-4">
-      <div className="hidden print:block">
+      <div className="hidden print:flex print:items-center print:gap-4">
         <Logo height={48} />
+        <div className="border-l border-line pl-4">
+          <p className="text-sm font-semibold text-ink">{APP_NAME}</p>
+          <p className="text-xs text-ink-muted">{APP_TAGLINE}</p>
+        </div>
       </div>
 
       <PageHeader

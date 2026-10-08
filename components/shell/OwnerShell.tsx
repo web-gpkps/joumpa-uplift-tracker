@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from "react";
+import { APP_NAME } from "@/lib/app-info";
 import { Brand } from "./Brand";
 import { ProgrammeContext } from "./ProgrammeContext";
 import { ShellFrame, ShellLoading } from "./ShellFrame";
@@ -10,7 +11,7 @@ const ownerBrand = (
     href="/admin"
     linkLabel="Dashboard, pemilik"
     title="Pemilik · semua stasiun"
-    subtitle="Uplift Tracker JOUMPA"
+    subtitle={APP_NAME}
   />
 );
 

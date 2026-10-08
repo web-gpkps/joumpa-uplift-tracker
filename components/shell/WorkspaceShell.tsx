@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Workspace } from "@/lib/workspace";
 import type { WorkspaceAccess } from "@/lib/workspace/access";
+import { APP_NAME } from "@/lib/app-info";
 import { Brand } from "./Brand";
 import { Logo } from "./Logo";
 import { ShellFrame, ShellLoading } from "./ShellFrame";
@@ -28,7 +29,7 @@ export function WorkspaceShell({ access, workspace, today, children }: Workspace
           href={access.basePath}
           linkLabel={`Dashboard, ${workspace.scopeLabel}`}
           title={workspace.scopeLabel}
-          subtitle="Uplift Tracker JOUMPA"
+          subtitle={APP_NAME}
         />
       }
       items={sheetNav(access)}
@@ -67,7 +68,7 @@ export function WorkspaceShellLoading() {
         <div className="flex min-w-0 items-center gap-3">
           <Logo height={36} className="-ml-[9px]" />
           <p className="truncate border-l border-line pl-3 text-sm font-semibold text-ink">
-            Uplift Tracker JOUMPA
+            {APP_NAME}
           </p>
         </div>
       }

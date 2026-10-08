@@ -1,5 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 import type { Metadata } from "next";
+import { APP_NAME } from "@/lib/app-info";
 import { getWorkspace, linkAccess } from "@/lib/workspace";
 import { todayInJakarta } from "@/components/shell/programme-calendar";
 import { WorkspaceShell, WorkspaceShellLoading } from "@/components/shell/WorkspaceShell";
@@ -10,7 +11,7 @@ import { InvalidLinkScreen, WorkspaceUnavailableScreen } from "@/components/shel
  * headers on every /s/* response, and this metadata repeats both as <meta> tags.
  */
 export const metadata: Metadata = {
-  title: { default: "Ruang kerja", template: "%s | Ruang kerja JOUMPA" },
+  title: { default: `Ruang kerja | ${APP_NAME}`, template: `%s | ${APP_NAME}` },
   referrer: "no-referrer",
   robots: { index: false, follow: false, nocache: true },
 };

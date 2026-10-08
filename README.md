@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JOUMPA Uplifting Action Tracker
 
-## Getting Started
+**Monitoring Hasil Evaluasi & Tindak Lanjut Perbaikan Layanan**
 
-First, run the development server:
+Aplikasi web untuk memantau tindak lanjut pelatihan Uplifting Service JOUMPA, Customer Service
+Division PT Gapura Angkasa: 75 petugas di stasiun SUB, DPS, CGK, HLP dan KNO selama 10 minggu
+(12 Okt s.d. 14 Des 2026). Isinya mengikuti workbook "Tracker Tindak Lanjut Uplifting JOUMPA",
+sheet demi sheet.
+
+## Siapa memakai apa
+
+| Peran | Akses | Cakupan |
+|---|---|---|
+| Stasiun (SUB, DPS, CGK, HLP, KNO) | tautan ruang kerja `/s/<token>`, tanpa akun | data stasiun sendiri |
+| KPS | tautan ruang kerja dengan lingkup KPS, tanpa akun | semua stasiun |
+| Pemilik | masuk di `/login`, area `/admin` | semua stasiun, termasuk tautan, Parameter dan sinkronisasi |
+
+Sheet yang tersedia: Dashboard, Master SDM, Log Performa, Cek BMI, Tindak Lanjut, Penggantian SDM
+dan Laporan Mingguan (bisa dicetak A4). Di desktop pengisian memakai tabel ala spreadsheet
+(navigasi keyboard, tempel dari Excel, simpan otomatis per baris); di ponsel memakai kartu.
+
+Google Sheet replika tersinkron dua arah dengan database. Bila sel yang sama diubah di kedua sisi,
+perubahan dari aplikasi yang dipakai dan nilai dari Sheet dicatat di log konflik.
+
+## Teknologi
+
+Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS 4, Supabase
+(Postgres, Auth, RLS), Vercel, Google Sheets API dan Apps Script. Paket dikelola dengan bun.
+
+## Menjalankan secara lokal
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
+cp .env.example .env.local   # lalu isi nilainya, lihat tabel di bawah
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Variabel | Untuk |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | koneksi aplikasi ke Supabase (publik) |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | mesin sinkronisasi, hanya di server |
+| `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_SHEETS_ID` | akses service account ke Google Sheet |
+| `SYNC_SECRET`, `SYNC_PING_SECRET` | otorisasi `POST /api/sync/run` (cron dan Apps Script) |
+| `CONFLICT_POLICY` | opsional, bawaan `db-wins` |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Jangan pernah menaruh kunci service role atau kunci Google di variabel `NEXT_PUBLIC_*`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Database
 
-## Learn More
+Skema, RLS dan fungsi `share_*` ada di `supabase/migrations/`. Tes keamanan pgTAP di `tests/sql/`
+membuktikan pemisahan antarstasiun, penolakan tautan yang dicabut, dan akses pemilik.
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+supabase db push --db-url "$SUPABASE_DB_URL"
+supabase test db --db-url "$SUPABASE_DB_URL" tests/sql
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Langkah produksi sekali jalan (pg_cron, Vault) ada di `supabase/production-setup.sql`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tes
 
-## Deploy on Vercel
+```bash
+bun test lib components   # rumus workbook, agregasi, grid, sinkronisasi
+bun run lint
+bun run build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Dokumen
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `docs/SPEC.md`: model akses, model data, aturan dari workbook
+- `docs/UX.md` dan `DESIGN.md`: perilaku layar dan arah visual
+- `docs/SYNC.md` dan `apps-script/README.md`: sinkronisasi Google Sheet
+
+Workbook sumber dan data seed berisi nama petugas, jadi tidak disimpan di repositori ini.

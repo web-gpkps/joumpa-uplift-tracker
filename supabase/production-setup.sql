@@ -1,4 +1,4 @@
--- JOUMPA Uplift Tracker: one-time PRODUCTION setup. NOT a migration; `supabase db push` ignores it.
+-- JOUMPA Uplifting Action Tracker: one-time PRODUCTION setup. NOT a migration; `supabase db push` ignores it.
 --
 -- Run in the production project's SQL editor (as postgres), after:
 --   1. `supabase db push` has applied every file in supabase/migrations/

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { APP_NAME, APP_TAGLINE } from "@/lib/app-info";
 import { Logo } from "./Logo";
 
 type AuthFrameProps = {
@@ -27,7 +28,9 @@ export function AuthFrame({ title, intro, children, footnote }: AuthFrameProps) 
           {/* Panel padding (24 px+) is the logo's clear space (≥ 25 % of 72 px = 18 px). */}
           <div className="px-6 pt-6 pb-8 sm:px-8 sm:pt-8">
             <Logo height={72} clearSpace={false} />
-            <h1 id="auth-frame-title" className="mt-6 text-xl font-semibold text-ink sm:text-2xl">
+            <p className="mt-5 text-sm font-semibold text-ink">{APP_NAME}</p>
+            <p className="text-xs text-ink-muted">{APP_TAGLINE}</p>
+            <h1 id="auth-frame-title" className="mt-5 border-t border-line pt-5 text-xl font-semibold text-ink sm:text-2xl">
               {title}
             </h1>
             {intro ? <div className="mt-2 text-sm wrap-break-word text-ink-muted">{intro}</div> : null}

@@ -10,8 +10,9 @@ export default function LoginPage() {
       title="Masuk ke area pemilik"
       intro={
         <p>
-          Area pemilik aplikasi: kelola tautan stasiun, parameter program, dan sinkronisasi Google
-          Sheet.
+          Area pemilik berisi workbook semua stasiun (Dashboard, Master SDM, Log Performa, Cek BMI,
+          Tindak Lanjut, Penggantian SDM, Laporan Mingguan) serta tautan stasiun, Parameter, dan
+          sinkronisasi Google Sheet.
         </p>
       }
       footnote={
