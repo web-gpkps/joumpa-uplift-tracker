@@ -1,32 +1,50 @@
 # Apps Script JOUMPA: pemicu sinkronisasi Google Sheet
 
-Script kecil ini dipasang di Google Sheet JOUMPA. Tugasnya hanya satu: setiap kali ada yang mengedit
-Sheet, script mengirim "ping" ke aplikasi supaya sinkronisasi Sheet ↔ database langsung berjalan.
-Tanpa script ini sinkronisasi tetap berjalan otomatis setiap 1 menit; script hanya mempercepatnya.
+Project Apps Script **standalone** (dibuat di script.google.com, tidak dibuka dari Google Sheet). Tugasnya
+hanya satu: setiap kali ada yang mengedit Sheet JOUMPA, script mengirim "ping" ke aplikasi supaya
+sinkronisasi Sheet ↔ database langsung berjalan. Tanpa script ini sinkronisasi tetap berjalan otomatis
+setiap 1 menit dari server; script hanya mempercepatnya.
 
-Script **tidak** menyimpan kunci database. Ia hanya memegang `SYNC_PING_SECRET`, rahasia yang hanya bisa
-memicu sinkronisasi dan tidak bisa membaca atau mengubah data.
+Script **tidak** membaca atau mengubah isi Sheet dan tidak menyimpan kunci database. Ia hanya memegang
+`SYNC_PING_SECRET`, rahasia yang hanya bisa memicu sinkronisasi.
 
-## Pemasangan (sekali, oleh pemilik Sheet)
+## Pemasangan (sekali)
 
-1. Buka Google Sheet JOUMPA, lalu **Extensions → Apps Script**.
-2. Hapus isi `Code.gs` bawaan, lalu tempel isi file [`Code.gs`](Code.gs) dari folder ini.
-3. Klik ikon roda gigi **Project Settings**, centang **Show "appsscript.json" manifest file in editor**.
-   Kembali ke **Editor**, buka `appsscript.json`, ganti isinya dengan file [`appsscript.json`](appsscript.json).
-4. Masih di **Project Settings**, bagian **Script Properties**, tambahkan dua properti:
+Pakai akun Google yang punya akses **edit** ke Sheet JOUMPA. Semua nilai yang perlu disalin ada di file
+`.env` aplikasi, bagian "Apps Script".
 
-   | Property           | Nilai                                                         |
-   |--------------------|---------------------------------------------------------------|
-   | `SYNC_URL`         | `https://<domain-aplikasi>/api/sync/run`                      |
-   | `SYNC_PING_SECRET` | sama persis dengan `SYNC_PING_SECRET` di Vercel (minta ke admin) |
+1. Buka [script.google.com](https://script.google.com) → **New project**. Ganti judul "Untitled project"
+   menjadi misalnya **JOUMPA Sync**.
+2. Hapus isi `Code.gs` bawaan, lalu tempel isi [`Code.gs`](Code.gs) dari folder ini. Klik **Save** (ikon disket).
+3. Klik ⚙️ **Project Settings** (kiri):
+   - centang **Show "appsscript.json" manifest file in editor**;
+   - bagian **Script Properties** → **Add script property**, tambahkan tiga properti:
 
-5. Klik **Save**. Muat ulang (refresh) tab Google Sheet. Menu **JOUMPA** muncul di bilah menu.
-6. Pilih **JOUMPA → Pasang trigger**. Google meminta izin (akses Sheet ini, menghubungi layanan luar,
-   mengelola trigger). Pilih akun Anda, lalu **Allow**.
-7. Pilih **JOUMPA → Sinkronkan sekarang**. Muncul pesan "Sinkronisasi selesai." di pojok kanan bawah.
+   | Property           | Nilai (dari `.env`)                                          |
+   |--------------------|--------------------------------------------------------------|
+   | `SHEET_ID`         | baris `SHEET_ID=`                                            |
+   | `SYNC_URL`         | baris `SYNC_URL=` (`https://…/api/sync/run`)                 |
+   | `SYNC_PING_SECRET` | baris `SYNC_PING_SECRET=` (64 karakter, salin persis)        |
 
-Jika `SYNC_URL` atau `SYNC_PING_SECRET` belum diisi, menu akan menampilkan pesan "Belum dikonfigurasi"
-dan edit di Sheet tidak memicu apa pun (tidak ada error).
+   Klik **Save script properties**.
+4. Kembali ke **Editor** (ikon `< >`), buka `appsscript.json`, ganti seluruh isinya dengan
+   [`appsscript.json`](appsscript.json). Save.
+5. Di bilah atas editor, pilih fungsi **`cekKonfigurasi`** lalu klik **Run**. Pertama kali, Google meminta
+   izin: **Review permissions** → pilih akun → jika muncul "Google hasn't verified this app", klik
+   **Advanced** → **Go to JOUMPA Sync (unsafe)** → **Allow**. (Peringatan itu muncul untuk semua script
+   buatan sendiri; script ini milik Anda.) Execution log harus menampilkan
+   `Konfigurasi lengkap. Sheet: "Tracker Tindak Lanjut Uplifting JOUMPA" …`.
+6. Pilih fungsi **`pasangTrigger`** → **Run**. Log: `Trigger terpasang.` Cek di menu kiri **Triggers** (ikon
+   jam): ada dua trigger, `saatDiedit` (On edit) dan `saatStrukturBerubah` (On change).
+7. Pilih fungsi **`sinkronkanSekarang`** → **Run**. Log: `Sinkronisasi selesai.` Langkah ini menjalankan
+   sinkronisasi sungguhan; yang pertama kali juga menyiapkan Sheet (zona waktu Jakarta, tab
+   "Temuan Mingguan", kolom ID di Penggantian SDM).
+
+Izin yang diminta: membuka Google Sheets (dipakai hanya untuk memeriksa ID Sheet dan memasang trigger
+pada Sheet itu; isi Sheet tidak dibaca), menghubungi layanan luar (mengirim ping ke aplikasi), dan
+mengelola trigger.
+
+Fungsi lain: **`hapusTrigger`** melepas kedua trigger. Sinkronisasi tetap berjalan tiap menit dari server.
 
 ## Aturan pakai Sheet
 
@@ -65,18 +83,21 @@ Edit pada sel yang berbeda di baris yang sama tetap digabung tanpa konflik.
 
 ## Keamanan
 
-- Siapa pun yang bisa membuka editor Apps Script dapat melihat `SYNC_PING_SECRET`. Rahasia ini hanya bisa
-  memicu sinkronisasi, jadi risikonya kecil. Jika bocor, admin cukup mengganti `SYNC_PING_SECRET` di
-  Vercel lalu di Script Properties.
+- Project standalone hanya bisa dibuka pemiliknya (dan orang yang Anda undang ke project itu), jadi editor
+  Sheet lain tidak bisa melihat `SYNC_PING_SECRET`. Rahasia ini hanya bisa memicu sinkronisasi. Jika
+  bocor, ganti `SYNC_PING_SECRET` di Vercel dan di Script Properties.
+- Trigger berjalan atas nama akun yang menjalankan `pasangTrigger`. Jika akun itu kehilangan akses edit
+  ke Sheet, ping berhenti (sinkronisasi tiap menit tetap jalan); pasang ulang dari akun yang punya akses.
 - Jangan pernah menaruh kunci Supabase atau kunci service account di script ini.
 
 ## Masalah umum
 
-| Pesan / gejala                                  | Penyebab dan solusi |
-|-------------------------------------------------|---------------------|
-| "Belum dikonfigurasi"                           | Isi `SYNC_URL` dan `SYNC_PING_SECRET` di Script Properties (langkah 4). |
-| "Ditolak server: SYNC_PING_SECRET tidak cocok." | Samakan nilainya dengan yang ada di Vercel. |
-| "Sinkronisasi lain sedang berjalan"             | Normal. Perubahan ikut di putaran berikutnya (≤ 1 menit). |
-| "Sinkronisasi selesai dengan catatan"           | Ada nilai tidak valid atau judul kolom berubah. Lihat catatan sel / halaman admin. |
-| Menu JOUMPA tidak muncul                        | Muat ulang Sheet. Pastikan script tersimpan di Sheet yang benar. |
-| Edit tidak tersinkron cepat                     | Jalankan lagi **JOUMPA → Pasang trigger** (oleh pemilik Sheet). Cron tetap menyinkronkan tiap menit. |
+| Pesan / gejala                                       | Penyebab dan solusi |
+|------------------------------------------------------|---------------------|
+| "Belum dikonfigurasi"                                | Isi `SHEET_ID`, `SYNC_URL`, `SYNC_PING_SECRET` di Script Properties (langkah 3). |
+| `Exception: Unexpected error while getting the method or property openById` / "not found" | `SHEET_ID` salah, atau akun ini tidak punya akses ke Sheet. Salin ulang dari `.env`; pastikan akun punya akses edit. |
+| "You do not have permission to call …"               | Izin belum diberikan atau `appsscript.json` belum diganti. Ulangi langkah 4–5. |
+| "Ditolak server: SYNC_PING_SECRET tidak cocok."      | Samakan nilainya dengan `SYNC_PING_SECRET` di `.env` (dan di Vercel). |
+| "Sinkronisasi lain sedang berjalan"                  | Normal. Perubahan ikut di putaran berikutnya (≤ 1 menit). |
+| "Sinkronisasi selesai dengan catatan"                | Ada nilai tidak valid atau judul kolom berubah. Lihat catatan sel / halaman admin. |
+| Edit tidak tersinkron cepat                          | Lihat menu **Triggers**: jika kosong, jalankan `pasangTrigger` lagi. Menu **Executions** menampilkan riwayat dan error tiap ping. |

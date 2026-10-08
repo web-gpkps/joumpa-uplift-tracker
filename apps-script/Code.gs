@@ -1,43 +1,54 @@
 /**
  * JOUMPA Uplifting Action Tracker: pemicu sinkronisasi Google Sheet <-> database.
  *
- * Script ini hanya mengirim "ping" ke server (POST /api/sync/run). Server yang membaca dan menulis data.
- * Tidak ada kunci database di sini. Script Properties yang dibutuhkan:
+ * Project standalone (dibuat dari script.google.com, tidak menempel di Sheet). Script ini hanya
+ * mengirim "ping" ke server (POST /api/sync/run); server yang membaca dan menulis data. Script tidak
+ * pernah membaca atau mengubah isi Sheet, dan tidak menyimpan kunci database.
+ *
+ * Script Properties (Project Settings > Script Properties):
+ *   SHEET_ID          ID Google Sheet JOUMPA (bagian URL di antara /d/ dan /edit)
  *   SYNC_URL          https://<domain-aplikasi>/api/sync/run
  *   SYNC_PING_SECRET  rahasia khusus ping (hanya bisa memicu sinkronisasi, tidak bisa membaca data)
+ *
+ * Jalankan dari editor (pilih fungsi di samping tombol Run, lalu Run):
+ *   cekKonfigurasi      memeriksa ketiga properti dan akses ke Sheet, tanpa sinkronisasi
+ *   pasangTrigger       sekali saja: memasang trigger edit dan perubahan struktur pada Sheet
+ *   sinkronkanSekarang  memicu satu sinkronisasi sekarang
+ *   hapusTrigger        melepas trigger (sinkronisasi tetap berjalan tiap menit dari server)
+ * Hasil tiap fungsi tampil di Execution log.
  */
 
 var JEDA_PING_DETIK = 5; // edit beruntun dalam 5 detik cukup satu ping; sisanya ikut putaran cron (<= 1 menit)
+var HANDLER = ['saatDiedit', 'saatStrukturBerubah'];
 
-function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('JOUMPA')
-    .addItem('Sinkronkan sekarang', 'sinkronkanSekarang')
-    .addItem('Pasang trigger', 'pasangTrigger')
-    .addToUi();
+function cekKonfigurasi() {
+  var cfg = konfigurasi_();
+  if (!cfg) throw new Error(pesanBelumDikonfigurasi_());
+  var nama = SpreadsheetApp.openById(cfg.sheetId).getName(); // gagal di sini bila ID salah atau akun tanpa akses
+  var trigger = triggerTerpasang_();
+  console.log('Konfigurasi lengkap. Sheet: "' + nama + '". SYNC_URL: ' + cfg.url + '. ' +
+    (trigger.length ? 'Trigger terpasang: ' + trigger.join(', ') + '.' : 'Trigger belum dipasang: jalankan pasangTrigger.'));
 }
 
-/** Menu: JOUMPA > Sinkronkan sekarang */
-function sinkronkanSekarang() {
-  var hasil = kirimPing_('menu', false);
-  SpreadsheetApp.getActive().toast(hasil.pesan, 'JOUMPA', 10);
-}
-
-/** Menu: JOUMPA > Pasang trigger (sekali saja, oleh pemilik Sheet). */
 function pasangTrigger() {
-  var ui = SpreadsheetApp.getUi();
-  if (!konfigurasi_()) {
-    ui.alert('JOUMPA', pesanBelumDikonfigurasi_(), ui.ButtonSet.OK);
-    return;
-  }
-  var ss = SpreadsheetApp.getActive();
-  ScriptApp.getProjectTriggers().forEach(function (t) {
-    var f = t.getHandlerFunction();
-    if (f === 'saatDiedit' || f === 'saatStrukturBerubah') ScriptApp.deleteTrigger(t);
-  });
-  ScriptApp.newTrigger('saatDiedit').forSpreadsheet(ss).onEdit().create();
-  ScriptApp.newTrigger('saatStrukturBerubah').forSpreadsheet(ss).onChange().create();
-  ui.alert('JOUMPA', 'Trigger terpasang. Setiap perubahan di Sheet akan memicu sinkronisasi.', ui.ButtonSet.OK);
+  var cfg = konfigurasi_();
+  if (!cfg) throw new Error(pesanBelumDikonfigurasi_());
+  SpreadsheetApp.openById(cfg.sheetId); // memastikan akun ini bisa membuka Sheet sebelum memasang trigger
+  hapusTriggerKami_();
+  ScriptApp.newTrigger('saatDiedit').forSpreadsheet(cfg.sheetId).onEdit().create();
+  ScriptApp.newTrigger('saatStrukturBerubah').forSpreadsheet(cfg.sheetId).onChange().create();
+  console.log('Trigger terpasang. Setiap perubahan di Sheet akan memicu sinkronisasi.');
+}
+
+function sinkronkanSekarang() {
+  var hasil = kirimPing_('manual', false);
+  if (!hasil.ok) throw new Error(hasil.pesan);
+  console.log(hasil.pesan);
+}
+
+function hapusTrigger() {
+  var jumlah = hapusTriggerKami_();
+  console.log(jumlah ? jumlah + ' trigger dilepas.' : 'Tidak ada trigger JOUMPA yang terpasang.');
 }
 
 /** Trigger terpasang: setiap edit sel. */
@@ -57,7 +68,7 @@ function kirimPing_(sumber, pakaiJeda) {
   if (!cfg) return { ok: false, pesan: pesanBelumDikonfigurasi_() };
 
   if (pakaiJeda) {
-    var cache = CacheService.getDocumentCache();
+    var cache = CacheService.getScriptCache();
     if (cache.get('joumpa_ping')) return { ok: true, pesan: 'Dilewati (jeda).' };
     cache.put('joumpa_ping', '1', JEDA_PING_DETIK);
   }
@@ -95,13 +106,31 @@ function kirimPing_(sumber, pakaiJeda) {
 
 function konfigurasi_() {
   var p = PropertiesService.getScriptProperties();
+  var sheetId = (p.getProperty('SHEET_ID') || '').trim();
   var url = (p.getProperty('SYNC_URL') || '').trim();
   var secret = (p.getProperty('SYNC_PING_SECRET') || '').trim();
-  if (!/^https:\/\/\S+$/.test(url) || secret.length < 16) return null;
-  return { url: url, secret: secret };
+  if (!/^[A-Za-z0-9_-]{30,}$/.test(sheetId) || !/^https:\/\/\S+$/.test(url) || secret.length < 16) return null;
+  return { sheetId: sheetId, url: url, secret: secret };
+}
+
+function triggerTerpasang_() {
+  return ScriptApp.getProjectTriggers()
+    .map(function (t) { return t.getHandlerFunction(); })
+    .filter(function (f) { return HANDLER.indexOf(f) >= 0; });
+}
+
+function hapusTriggerKami_() {
+  var jumlah = 0;
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (HANDLER.indexOf(t.getHandlerFunction()) >= 0) {
+      ScriptApp.deleteTrigger(t);
+      jumlah++;
+    }
+  });
+  return jumlah;
 }
 
 function pesanBelumDikonfigurasi_() {
-  return 'Belum dikonfigurasi. Buka Extensions > Apps Script > Project Settings > Script Properties, ' +
-    'lalu isi SYNC_URL dan SYNC_PING_SECRET.';
+  return 'Belum dikonfigurasi. Buka Project Settings > Script Properties, lalu isi SHEET_ID, SYNC_URL ' +
+    'dan SYNC_PING_SECRET (nilainya ada di file .env aplikasi).';
 }

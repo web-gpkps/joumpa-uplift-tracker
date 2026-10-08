@@ -180,8 +180,9 @@ the "Gapura IAP" project: **lease + baseline snapshot + per-cell 3-way merge + c
 - **When it runs** (any of these, the lease makes overlapping calls harmless):
   1. `pg_cron` every minute → `pg_net` POST to `/api/sync/run` (URL + secret kept in Supabase Vault).
   2. DB change: AFTER STATEMENT trigger on synced tables → debounced `pg_net` ping (≥ 10 s apart).
-  3. Sheet edit: Apps Script installable `onEdit` → POST ping. The script only holds
-     `SYNC_PING_SECRET`, which can trigger a run and nothing else. Menu "JOUMPA → Sinkronkan sekarang".
+  3. Sheet edit: a standalone Apps Script project (script.google.com, not bound to the Sheet) installs
+     `onEdit`/`onChange` triggers on the Sheet by ID → POST ping. It only holds `SYNC_PING_SECRET`,
+     which can trigger a run and nothing else; functions are run from the editor (no Sheet menu).
 - **Lease**: `sync_state` row (lease_token, lease_until 60 s). One run at a time.
 - **Merge** per table, per row key, per cell, against `sync_state.baseline` (last synced values):
   only sheet changed → write DB; only DB changed → write sheet; both changed to the same value →

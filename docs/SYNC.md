@@ -132,7 +132,7 @@ CLI) truncates; for local `next dev` put the JSON on one line in `GOOGLE_SERVICE
 | `sync_run_url` | `https://<app-domain>/api/sync/run` |
 | `sync_secret` | the value of `SYNC_PING_SECRET` (least privilege; `SYNC_SECRET` also works) |
 
-### Apps Script (Script Properties): `SYNC_URL`, `SYNC_PING_SECRET`. See `apps-script/README.md`.
+### Apps Script (standalone project, Script Properties): `SHEET_ID`, `SYNC_URL`, `SYNC_PING_SECRET`. See `apps-script/README.md`.
 
 ### Google
 
